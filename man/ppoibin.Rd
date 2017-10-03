@@ -10,10 +10,10 @@ Compute the Poisson binomial distribution via convolution
 The cdf and pmf for the Poisson binomial distribution computed using convolution methods
 }
 \usage{
-ppoibin(kk, pp, method = "DFT-CF",wts=NULL)
-dpoibin(kk, pp,wts=NULL)
-qpoibin(qq, pp,wts=NULL)
-rpoibin(m, pp,wts=NULL)
+pconvpoibin(p,method='direct')
+pconvpoibin(p,method='fft_tree',M=2)
+dconvpoibin(p,method='direct')
+dconvpoibin(p,method='fft_tree',M=2)
 }
 \arguments{
 
@@ -26,6 +26,7 @@ rpoibin(m, pp,wts=NULL)
 }
 \details{
 See the reference for computational details.
+}
 }
 \value{
       Returns the entire cdf or pmf
