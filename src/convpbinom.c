@@ -4,27 +4,35 @@
 #include <fftw3.h>
 #include <R.h>
 
+//used to make fft computations more readable
 #define REAL 0
 #define IMAG 1
 
+    
+//This function carries out FFT based convolution on a two sequences. One called the "kernel" and the other called the "signal"
+//The work flow is 1. transform the two sequences to fourier domain 2. multiply the two resulting sequences 3. transform back 
+//For more detail see: https://en.wikipedia.org/wiki/Convolution_theorem
 double fft_convolution(double kernel[], int kernellen, double signal[], int signallen, double result[]){
 
     int i;
     int j;
 
-    int convolution_length = kernellen + signallen - 1; //the length of the resulting convolution
+    int convolution_length = kernellen + signallen - 1; //the length of the resulting convolution aka our final result
 
     //We have to add 0's at the end of the arrays (called 0 padding) so that the convolution will work
     double padded_signal[convolution_length];
     double padded_kernel[convolution_length];
     int k;
-
+    
+    
     for (k=0; k< convolution_length; k++){
         padded_signal[k] = 0;
         padded_kernel[k] = 0;
     }
 
-
+    
+    //The for loops below fill out the values of padded_signal and padded_kernel with the values of 
+    //signal and kernel
     for (k=0; k< signallen; k++){
         padded_signal[k] = signal[k];
     }
@@ -33,17 +41,18 @@ double fft_convolution(double kernel[], int kernellen, double signal[], int sign
         padded_kernel[k] = kernel[k];
     }
 
-
+    
+    //allocate memory for fft_multi, which will hold the result of the fourier domain multiplcation of the two sequences
     fftw_complex *fft_multi; 
     fft_multi = fftw_malloc(sizeof (fftw_complex)*convolution_length);
 
 
-
-    fftw_complex *signal_fft, *kernel_fft; //the results of the fft for the signal and for the kernel
+    //allocate memory for the result of doing the fft on the signal and the fft on the kernel
+    fftw_complex *signal_fft, *kernel_fft; 
     signal_fft = fftw_malloc(sizeof(fftw_complex)* (convolution_length));
     kernel_fft = fftw_malloc(sizeof(fftw_complex)* (convolution_length));
 
-    //create the fft plans
+    //create the fft plans, used by the fftw3 library
     fftw_plan plan1 = fftw_plan_dft_r2c_1d(convolution_length,
                                              padded_signal,
                                              signal_fft,
@@ -54,11 +63,11 @@ double fft_convolution(double kernel[], int kernellen, double signal[], int sign
                                          kernel_fft,
                                          FFTW_ESTIMATE);
 
-    //execute them, this is what actually does the fft
+    //execute the plans, this is what actually does the fft and transforms the signal and kernel
     fftw_execute(plan1);
     fftw_execute(plan2);
 
-
+    //Now carry out the multiplcation of the sequences in the fourier domain. Note that we normalize by the length.
     for(i=0 ; i < convolution_length; i++){
 
         fft_multi[i][REAL] = (signal_fft[i][REAL]*kernel_fft[i][REAL] - signal_fft[i][IMAG]*kernel_fft[i][IMAG])/convolution_length;
@@ -66,13 +75,12 @@ double fft_convolution(double kernel[], int kernellen, double signal[], int sign
 
     }
 
-
+    //Transform fft_multi back from the fourier domain to get the final result
     fftw_plan plan3 = fftw_plan_dft_c2r_1d(convolution_length,fft_multi,result,FFTW_ESTIMATE);
     fftw_execute(plan3);
 
 
-
-
+    //The below code destroys the plans and frees up memory
     fftw_destroy_plan(plan3);
     fftw_destroy_plan(plan2);
     fftw_destroy_plan(plan1);
@@ -85,14 +93,15 @@ double fft_convolution(double kernel[], int kernellen, double signal[], int sign
 }
 
 
+//This function calculates the Poisson binomial density by means of directly calculating the convolution definition of
+//the distribution of a sum of random variables. See: https://en.wikipedia.org/wiki/Convolution_of_probability_distributions
 double direct_convolution_local(double probs[], int probslen, double result[]){
 
   int i,j;
   int oldlen = 2; // length of old kernel
-  int currlen = 0; // length of current result (new kernel)
   double signal[2];
   double t,tmp;
-  int k;
+
 
   // initialize (old kernel)
   result[0] = 1-probs[0];
@@ -104,21 +113,21 @@ double direct_convolution_local(double probs[], int probslen, double result[]){
     // set signal
     signal[0] = probs[i];
     signal[1] = 1-probs[i];
-    
-    // create current kernel
-    currlen = oldlen + 1;
 
-    // initialize result
-    result[currlen-1] = signal[0] * result[oldlen-1];
-    oldlen++;
-    t = result[0];//signal[1] * result[0];
+    // initialize result and calculate the two edge cases
+    result[oldlen] = signal[0] * result[oldlen-1];
+
+    t = result[0];
     result[0] = signal[1]*t;
-    for(j=1; j < currlen-1; j++){
+      
+    //calculate the interior cases
+    for(j=1; j < oldlen; j++){
       tmp=result[j];
       result[j] = signal[0] * t + signal[1] * result[j];
       t=tmp;
     }
-
+      
+    oldlen++;
   }
 
 }
@@ -126,15 +135,13 @@ double direct_convolution_local(double probs[], int probslen, double result[]){
 
 
 
-//The same as direct_convolution_local except it is formatted so that it can be called directly from R
+//The same as direct_convolution_local except the variables are pointers so that it can be called directly from R.
 void direct_convolution(double probs[], int *probslen, double result[]){
 
   int i,j;
   int oldlen = 2; // length of old kernel
   double signal[2];
-  double t;
-  int currlen;
-  double tmp;
+  double t, tmp;
 
   // initialize (old kernel)
   result[0] = 1-probs[0];
@@ -147,9 +154,6 @@ void direct_convolution(double probs[], int *probslen, double result[]){
     signal[0] = probs[i];
     signal[1] = 1-probs[i];
    
-    // create current kernel
-    currlen = oldlen + 1;
-
     // calculate last element of result
     result[oldlen] = signal[0] * result[oldlen-1];
            
@@ -171,31 +175,40 @@ void direct_convolution(double probs[], int *probslen, double result[]){
 
 
 
+//This functions calculates the Poisson binomial density via a binary tree structured FFT convolution approach.
+//First, the function partitions the inputted probabilities into different groups, making them as equal in size as possible.
+//Then, it applies direct_convolution_local to each of the individual groups.
+//Finally, it takes pairs of groups and convolves them together using fft_convolution, always operating on pairs of equal size
+//It continues this process until only a single sequence is left. 
 void tree_convolution(double p_vec[], int *p_vec_len, int *num_splits, double result_vec[]){
 
   int number_splits = *num_splits+0;
 
+  //see how many times p_vec_len is divided by num_splits
   int leftover = *p_vec_len % number_splits; 
-
-  //int final_size = *p_vec_len + number_splits; 
 
   int total_splits = log(number_splits)/log(2);
 
-  //double result_vec[final_size]; 
-
-  int base = *p_vec_len/number_splits;  
+  int base = *p_vec_len/number_splits;//see how many points will be in each bin. Note that 
+  //int division in C is like a floor function, so, for example if p_vec_len/num_splits is 
+  //45.78 then base will equal 45. This means that we will be missing some points.
+  //To remedy this problem, the next two for loops are used.  
+    
+  //create an array containing the number of points in each bin
   int num_in_each[number_splits];
   int i;
   for (i = 0; i < number_splits; i++){
     num_in_each[i] = base;
   }
 
-
+  //This iterates through the num_splits array and keeps adding 1 to each element, in a circular
+  //fashion, leftover amount of times. This is basically distributing the remainder points evenly
+  //across the num_splits array.
   for (i = 0; i < leftover; i++){
     num_in_each[i % number_splits] += 1;
   }
 
-
+    //Do the initial regular convolution on each bin
     int memory_index_tracker = 0;
     int left_memory_index_tracker = 0;
     int right_memory_index_tracker = 0;
@@ -207,15 +220,17 @@ void tree_convolution(double p_vec[], int *p_vec_len, int *num_splits, double re
 
     int temp_num_splits = number_splits/2;
 
-
+      // add 1 to each num_in_each to account for the fact that the length of each bin increases by 1
+    // after doing the regular convolution.
     for(i = 0; i < number_splits; i++){
-        num_in_each[i] = num_in_each[i] += 1;
+        num_in_each[i] += 1;
     }
 
 
     int res_tracker = 0;
+    
+    //Take each pair and apply fft_convolution to them, and continue doing so until we only have one sequence, which is the result
     while (total_splits > 0){
-
 
         memory_index_tracker = 0;
         left_memory_index_tracker = 0;
@@ -225,7 +240,7 @@ void tree_convolution(double p_vec[], int *p_vec_len, int *num_splits, double re
 
             left_memory_index_tracker += num_in_each[2*i];
 
-    
+
             fft_convolution(result_vec+memory_index_tracker,num_in_each[2*i],
                             result_vec+left_memory_index_tracker,num_in_each[2*i+1],
                             result_vec+res_tracker);

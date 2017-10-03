@@ -1,2 +1,2 @@
-export(split_conv,direct_convolution)
-useDynLib(convpoibin)
+export(dconvpoibin,pconvpoibin)
+useDynLib(final)
