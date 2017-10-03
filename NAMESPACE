@@ -1,2 +1,2 @@
 export(dconvpoibin,pconvpoibin)
-useDynLib(final)
+useDynLib(convpoibin)
