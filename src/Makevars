@@ -1,0 +1,4 @@
+PKG_CPPFLAGS= -I/usr/local/include  
+PKG_LIBS= -L/usr/local/lib -lfftw3  
+
+all: $(SHLIB)

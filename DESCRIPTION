@@ -1,11 +1,12 @@
 Package: convpoibin
 Version: 1.0
-Date: 10-2-2017
-Title: Fast computation of the Poisson Binomial distribution via convolution
+Date: 2017-10-05
+Title: Fast Computation of the Poisson Binomial Distribution via Convolution
 Author: William Biscarri <wbiscar2@illinois.edu>
 Maintainer: William Biscarri <wbiscar2@illinois.edu>
-Description: This package provides fast convolution based methods for computing the Poisson Binomial cdf and pmf.
+Description: Fast convolution based methods for computing the Poisson Binomial cdf and pmf.
 Depends: R (>= 3.3.2)
 SystemRequirements: fftw3 
 License: GPL-2
 Repository: CRAN
+RoxygenNote: 6.0.1
