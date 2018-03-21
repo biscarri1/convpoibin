@@ -12,7 +12,7 @@ More in depth directions are in development.
 
 
 ## UNIX INSTALLTION
-First you will need to install the fftw package. As an example, this can be done by typing the following into the command line:
+First you will need to install the fftw package. As an example, this can be done by typing the below into the command line. Note that the **--enable-shared** flag must be included.
 ```
 wget http://fftw.org/fftw-3.3.5.tar.gz
 tar -xzf fftw-3.3.5.tar.gz
