@@ -23,7 +23,7 @@ sudo make install
 ```
 Alternatively, it is possible to simple download the .tar.gz without using wget and continuing from the second step. It doesn't really matter how one gets the .tar.gz file, as long as they have it. fftw should be located in ```/usr/local/lib``` to check, you can try running ```ls /usr/local/lib | grep libfftw``` which should return some files with libfftw in the name if they are indeed in ```/usr/local/lib```
 
-**Importantly** the "--enable-shared" flag seems to be necessary.
+**Again, the "--enable-shared" flag seems to be necessary.**
 
 Then, the convpoibin library can be installed using devtools and install.github in R like so:
 ```R
