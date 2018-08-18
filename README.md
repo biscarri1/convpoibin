@@ -6,9 +6,9 @@ This code is currently **not** parallelized, although it is very clear how it co
 
 
 ## Dependencies
-The primary dependency for this code is the Faster Fourier Transform in the West (fftw) which is available at http://www.fftw.org/download.html It is highly recommended to check out the installation tutorial here: http://www.fftw.org/fftw3_doc/Installation-and-Customization.html
+The primary dependency for this code is the Fastest Fourier Transform in the West (fftw) which is available at http://www.fftw.org/download.html It is highly recommended to check out the installation tutorial here: http://www.fftw.org/fftw3_doc/Installation-and-Customization.html
 
-More in depth directions are in development.
+
 
 
 ## UNIX INSTALLTION
