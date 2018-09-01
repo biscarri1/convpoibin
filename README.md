@@ -21,7 +21,7 @@ cd fftw-3.3.5
 make
 sudo make install
 ```
-Alternatively, it is possible to simplly download the .tar.gz without using wget and continuing from the second step. It doesn't really matter how one gets the .tar.gz file, as long as they have it. fftw should be located in ```/usr/local/lib```. To check, you can try running ```ls /usr/local/lib | grep libfftw``` which should return some files with libfftw in the name if they are indeed in ```/usr/local/lib```
+Alternatively, it is possible to simply download the .tar.gz without using wget and continuing from the second step. It doesn't really matter how one gets the .tar.gz file, as long as they have it. fftw should be located in ```/usr/local/lib```. To check, you can try running ```ls /usr/local/lib | grep libfftw``` which should return some files with libfftw in the name if they are indeed in ```/usr/local/lib```
 
 **Again, the "--enable-shared" flag seems to be necessary.**
 
